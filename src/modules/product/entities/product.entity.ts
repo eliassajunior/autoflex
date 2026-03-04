@@ -1,21 +1,21 @@
 import { Production } from "src/modules/production/entities/production.entity";
 import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
 
-@Entity({ name: "materials" })
-export class Material {
-  @PrimaryColumn({ unique: true, length: 11 })
+@Entity({ name: "products" })
+export class Product {
+  @PrimaryColumn({ unique: true })
   code: string;
 
   @Column({ type: "varchar", unique: true })
   name: string;
-  @Column({ type: "int", default: 0 })
-  stock: number;
+  @Column({ type: "int" })
+  price: number;
 
-  @OneToMany(() => Production, (production) => production.material)
-  materialProduction: Production[];
+  @OneToMany(() => Production, (production) => production.product)
+  productProduction: Production[];
 
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()
-  updateAt: Date;
+  updatedAt: Date;
 }

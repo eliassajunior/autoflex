@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ReplyMessage } from "src/global/types/reply-message.type";
 import { capitalize } from "src/utils/capitalize.util";
-import { Repository, UpdateResult } from "typeorm";
+import { Repository } from "typeorm";
 import { CreateMaterialDto } from "./dtos/create-material.dto";
 import { Material } from "./entities/material.entity";
 
@@ -17,18 +17,22 @@ export class MaterialService {
     return await this.materialRepository.find();
   }
 
-  async create(data: CreateMaterialDto): Promise<UpdateResult | ReplyMessage> {
+  async create(data: CreateMaterialDto): Promise<ReplyMessage> {
     const code = `COD-${data.code}BR`.toUpperCase();
 
-    const codeExists = await this.materialRepository.findOne({ where: { code: code } });
-    if (codeExists) {
-      return await this.materialRepository.update({ code: codeExists.code }, { quantity: codeExists.quantity + 1 });
+    const material = await this.materialRepository.findOne({ where: { code: code } });
+    if (material) {
+      if (material.name === data.name) {
+        await this.materialRepository.update({ code: material.code }, { stock: material.stock + 1 });
+        return { message: "Material added." };
+      }
+      throw new ConflictException("The code is already registered with another item.");
     }
 
     const newMaterial = this.materialRepository.create({
       code: code,
       name: capitalize(data.name),
-      quantity: 1,
+      stock: 1,
     });
     await this.materialRepository.save(newMaterial);
 
@@ -36,27 +40,28 @@ export class MaterialService {
   }
 
   async update(code: string, name: string): Promise<ReplyMessage> {
-    const codeExists = await this.materialRepository.findOne({ where: { code: code } });
-    if (!codeExists) {
+    const material = await this.materialRepository.findOne({ where: { code: code } });
+    if (!material) {
       throw new NotFoundException("Material not found.");
     }
 
-    const newName = name ? name : codeExists.name;
-    await this.materialRepository.update({ code: codeExists.code }, { name: capitalize(newName) });
+    const newName = name ? name : material.name;
+    await this.materialRepository.update({ code: material.code }, { name: capitalize(newName) });
 
     return { message: "Material successfully updated!" };
   }
 
-  async remove(code: string): Promise<UpdateResult | ReplyMessage> {
-    const codeExists = await this.materialRepository.findOne({ where: { code: code } });
-    if (!codeExists) {
+  async remove(code: string): Promise<ReplyMessage> {
+    const material = await this.materialRepository.findOne({ where: { code: code } });
+    if (!material) {
       throw new NotFoundException("Material not found.");
     }
 
-    if (codeExists.quantity > 1) {
-      return await this.materialRepository.update({ code: codeExists.code }, { quantity: codeExists.quantity - 1 });
+    if (material.stock > 1) {
+      await this.materialRepository.update({ code: material.code }, { stock: material.stock - 1 });
+      return { message: "Material removed." };
     }
-    await this.materialRepository.remove(codeExists);
+    await this.materialRepository.remove(material);
 
     return { message: "Material successfully removed!" };
   }

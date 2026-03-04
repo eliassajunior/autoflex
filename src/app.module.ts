@@ -5,6 +5,8 @@ import * as Joi from "joi";
 import { globalConfig } from "./global/configs/global.config";
 import { globalSchema } from "./global/configs/schemas/global.schema";
 import { MaterialModule } from "./modules/material/material.module";
+import { ProductModule } from "./modules/product/product.module";
+import { ProductionModule } from "./modules/production/production.module";
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { MaterialModule } from "./modules/material/material.module";
       },
     }),
     MaterialModule,
+    ProductModule,
+    ProductionModule,
   ],
 })
 export class AppModule {}

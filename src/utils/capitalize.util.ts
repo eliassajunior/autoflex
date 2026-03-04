@@ -1,6 +1,7 @@
 export function capitalize(text: string): string {
-  if (!text) return text;
-
+  if (!text) {
+    return text;
+  }
   return text
     .toLocaleLowerCase()
     .split(" ")

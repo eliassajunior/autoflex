@@ -1,6 +1,7 @@
 import { IsNotEmpty, IsNumber, IsString, MaxLength, MinLength } from "class-validator";
+import { Revenue } from "../types/revenue.type";
 
-export class CreateMaterialDto {
+export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   @MinLength(5)
@@ -10,4 +11,11 @@ export class CreateMaterialDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  price: number;
+
+  @IsNotEmpty()
+  materials: Revenue[];
 }

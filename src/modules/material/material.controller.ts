@@ -1,6 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
 import { ReplyMessage } from "src/global/types/reply-message.type";
-import { UpdateResult } from "typeorm";
 import { CreateMaterialDto } from "./dtos/create-material.dto";
 import { Material } from "./entities/material.entity";
 import { MaterialService } from "./material.service";
@@ -15,7 +14,7 @@ export class MaterialController {
   }
 
   @Post()
-  async create(@Body() body: CreateMaterialDto): Promise<UpdateResult | ReplyMessage> {
+  async create(@Body() body: CreateMaterialDto): Promise<ReplyMessage> {
     return await this.materialService.create(body);
   }
 
@@ -25,7 +24,7 @@ export class MaterialController {
   }
 
   @Delete(":code")
-  async remove(@Param("code") code: string): Promise<UpdateResult | ReplyMessage> {
+  async remove(@Param("code") code: string): Promise<ReplyMessage> {
     return await this.materialService.remove(code);
   }
 }
