@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { Material } from "../material/entities/material.entity";
 import { Product } from "../product/entities/product.entity";
 import { Revenue } from "../product/types/revenue.type";
+import { ProduceProductDto } from "./dtos/produce-product.dto";
 import { Production } from "./entities/production.entity";
 
 @Injectable()
@@ -67,5 +68,33 @@ export class ProductionService {
         await this.productionRepository.save(newRevenue);
       }
     }
+  }
+
+  async produceProduct(data: ProduceProductDto) {
+    const recipeProduct = await this.productionRepository.find({
+      where: { product: { code: data.code } },
+      relations: { material: true, product: true },
+    });
+
+    if (!recipeProduct) {
+      throw new NotFoundException("Product recipe not found.");
+    }
+
+    for (const item of recipeProduct) {
+      const totatRequired = item.quantityRequired * data.quantity;
+
+      if (item.material.stock < totatRequired) {
+        throw new ConflictException(`Insufficient material to produce ${item.product.name}.`);
+      }
+    }
+
+    for (const item of recipeProduct) {
+      const totatRequired = item.quantityRequired * data.quantity;
+
+      item.material.stock -= totatRequired;
+      await this.materialRepository.save(item.material);
+    }
+
+    return { message: "Product successfully manufactured!" };
   }
 }
