@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { ReplyMessage } from "src/global/types/reply-message.type";
 import { Repository } from "typeorm";
 import { Product } from "../product/entities/product.entity";
 import { Storage } from "./entities/storage.entity";
