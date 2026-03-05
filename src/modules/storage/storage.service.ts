@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { ReplyMessage } from "src/global/types/reply-message.type";
 import { Repository } from "typeorm";
 import { Product } from "../product/entities/product.entity";
 import { Storage } from "./entities/storage.entity";
@@ -17,7 +18,7 @@ export class StorageService {
     return await this.storageRepository.find();
   }
 
-  async add(code: string, quantity: number) {
+  async add(code: string, quantity: number): Promise<void> {
     const product = await this.productRepository.findOne({ where: { code: code } });
     if (!product) {
       throw new NotFoundException("Product not found.");
@@ -34,7 +35,5 @@ export class StorageService {
       });
       await this.storageRepository.save(newProduct);
     }
-
-    return { message: "Product added to warehouse." };
   }
 }

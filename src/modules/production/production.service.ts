@@ -8,6 +8,7 @@ import { Revenue } from "../product/types/revenue.type";
 import { StorageService } from "../storage/storage.service";
 import { ProduceProductDto } from "./dtos/produce-product.dto";
 import { Production } from "./entities/production.entity";
+import { ProductionAvailability } from "./types/production-availability.type";
 
 @Injectable()
 export class ProductionService {
@@ -16,6 +17,9 @@ export class ProductionService {
     private readonly productionRepository: Repository<Production>,
     @InjectRepository(Material)
     private readonly materialRepository: Repository<Material>,
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
+
     private readonly storageService: StorageService,
   ) {}
 
@@ -105,5 +109,28 @@ export class ProductionService {
     await this.storageService.add(data.code, data.quantity);
 
     return { message: "Product successfully manufactured!" };
+  }
+
+  async getProductionAvailability(): Promise<ProductionAvailability[]> {
+    const products = await this.productRepository.find({
+      relations: {
+        productProduction: {
+          material: true,
+        },
+      },
+    });
+
+    return products.map((product) => {
+      if (!product.productProduction.length) {
+        return { code: product.code, name: product.name, maxQuantity: 0 };
+      }
+      const maxQuantity = Math.min(...product.productProduction.map((item) => Math.floor(item.material.stock / item.quantityRequired)));
+
+      return {
+        code: product.code,
+        name: product.name,
+        maxQuantity: maxQuantity,
+      };
+    });
   }
 }
