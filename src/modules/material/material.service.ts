@@ -1,7 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ReplyMessage } from "src/global/types/reply-message.type";
-import { capitalize } from "src/utils/capitalize.util";
 import { Repository } from "typeorm";
 import { CreateMaterialDto } from "./dtos/create-material.dto";
 import { Material } from "./entities/material.entity";
@@ -31,7 +30,7 @@ export class MaterialService {
 
     const newMaterial = this.materialRepository.create({
       code: code,
-      name: capitalize(data.name),
+      name: data.name,
       stock: 1,
     });
     await this.materialRepository.save(newMaterial);
@@ -46,7 +45,7 @@ export class MaterialService {
     }
 
     const newName = name ? name : material.name;
-    await this.materialRepository.update({ code: material.code }, { name: capitalize(newName) });
+    await this.materialRepository.update({ code: material.code }, { name: newName });
 
     return { message: "Material successfully updated!" };
   }

@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateC
 
 @Entity({ name: "products" })
 export class Product {
-  @PrimaryColumn({ unique: true })
+  @PrimaryColumn()
   code: string;
 
   @Column({ type: "varchar", unique: true })

@@ -1,9 +1,11 @@
 import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { ReplyMessage } from "src/global/types/reply-message.type";
 import { Repository } from "typeorm";
 import { Material } from "../material/entities/material.entity";
 import { Product } from "../product/entities/product.entity";
 import { Revenue } from "../product/types/revenue.type";
+import { StorageService } from "../storage/storage.service";
 import { ProduceProductDto } from "./dtos/produce-product.dto";
 import { Production } from "./entities/production.entity";
 
@@ -14,6 +16,7 @@ export class ProductionService {
     private readonly productionRepository: Repository<Production>,
     @InjectRepository(Material)
     private readonly materialRepository: Repository<Material>,
+    private readonly storageService: StorageService,
   ) {}
 
   async createRevenue(product: Product, materials: Revenue[]): Promise<void> {
@@ -70,13 +73,17 @@ export class ProductionService {
     }
   }
 
-  async produceProduct(data: ProduceProductDto) {
+  async produceProduct(data: ProduceProductDto): Promise<ReplyMessage> {
     const recipeProduct = await this.productionRepository.find({
-      where: { product: { code: data.code } },
+      where: {
+        product: {
+          code: data.code,
+        },
+      },
       relations: { material: true, product: true },
     });
 
-    if (!recipeProduct) {
+    if (!recipeProduct.length) {
       throw new NotFoundException("Product recipe not found.");
     }
 
@@ -84,7 +91,7 @@ export class ProductionService {
       const totatRequired = item.quantityRequired * data.quantity;
 
       if (item.material.stock < totatRequired) {
-        throw new ConflictException(`Insufficient material to produce ${item.product.name}.`);
+        throw new ConflictException(`Insufficient material to produce ${data.quantity} ${item.product.name}.`);
       }
     }
 
@@ -94,6 +101,8 @@ export class ProductionService {
       item.material.stock -= totatRequired;
       await this.materialRepository.save(item.material);
     }
+
+    await this.storageService.add(data.code, data.quantity);
 
     return { message: "Product successfully manufactured!" };
   }

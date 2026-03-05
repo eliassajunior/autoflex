@@ -1,7 +1,6 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ReplyMessage } from "src/global/types/reply-message.type";
-import { capitalize } from "src/utils/capitalize.util";
 import { Repository } from "typeorm";
 import { ProductionService } from "../production/production.service";
 import { CreateProductDto } from "./dtos/create-product.dto";
@@ -29,9 +28,16 @@ export class ProductService {
   async create(data: CreateProductDto): Promise<ReplyMessage> {
     const code = `COD-${data.code}BR`.toUpperCase();
 
+    const productExists = await this.productRepository.findOne({
+      where: [{ code }, { name: data.name }],
+    });
+    if (productExists) {
+      throw new ConflictException("Product code or name already exists.");
+    }
+
     const newProduct = this.productRepository.create({
-      code: code,
-      name: capitalize(data.name),
+      code,
+      name: data.name,
       price: data.price,
     });
 

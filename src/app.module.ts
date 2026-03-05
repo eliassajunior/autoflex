@@ -7,6 +7,8 @@ import { globalSchema } from "./global/configs/schemas/global.schema";
 import { MaterialModule } from "./modules/material/material.module";
 import { ProductModule } from "./modules/product/product.module";
 import { ProductionModule } from "./modules/production/production.module";
+import { StorageController } from "./modules/storage/storage.controller";
+import { StorageModule } from "./modules/storage/storage.module";
 
 @Module({
   imports: [
@@ -35,6 +37,8 @@ import { ProductionModule } from "./modules/production/production.module";
     MaterialModule,
     ProductModule,
     ProductionModule,
+    StorageModule,
   ],
+  controllers: [StorageController],
 })
 export class AppModule {}
